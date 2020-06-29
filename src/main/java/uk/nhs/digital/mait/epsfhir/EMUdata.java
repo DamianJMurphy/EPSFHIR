@@ -90,9 +90,12 @@ class EMUdata {
         }        
     }
     
-    private ArrayList<String> readLine(String line) {
+    private ArrayList<String> readLine(String line) 
+            throws Exception
+    {
         ArrayList<String> list = new ArrayList<>();
-        String[] fields = line.split("\t");
+        String utfLine = UTF8CharacterSubstituter.doSubstitutions(line);
+        String[] fields = utfLine.split("\t");
         list.addAll(Arrays.asList(fields));
         return list;
     }
