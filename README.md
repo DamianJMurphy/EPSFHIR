@@ -3,17 +3,14 @@
 
 When built the command-line expects the following arguments:
 
-properties file (see below)
-
-EMU prescriptions ("Export_JoinedTable_R2") file
-
-EMU line items ("Exprt_LineItem_R2") file
-
+properties file (see below)  
+EMU prescriptions ("Export_JoinedTable_R2") file  
+EMU line items ("Exprt_LineItem_R2") file  
 Output directory (or - for stdout)
 
 It will write a JSON or XML file containing the serialised bundle for each prescription in the input data, to
 the given output directory, named after the short-form prescription id (eg "0EF1F6-B83002-00001X.json" or 
-"0EF1F6-B83002-00001X.xml" as appropriate. When writing to standard output, data is separated by the short-form
+"0EF1F6-B83002-00001X.xml" as appropriate). When writing to standard output, data is separated by the short-form
 prescription id on a line by itself.
 
 "Static" configurations are held in the properties file:
