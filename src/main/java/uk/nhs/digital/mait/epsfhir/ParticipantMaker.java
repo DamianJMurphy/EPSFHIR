@@ -16,7 +16,6 @@
 package uk.nhs.digital.mait.epsfhir;
 
 import java.util.ArrayList;
-import java.util.UUID;
 import org.hl7.fhir.r4.model.Address;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
@@ -27,6 +26,7 @@ import org.hl7.fhir.r4.model.Organization;
 import org.hl7.fhir.r4.model.Practitioner;
 import org.hl7.fhir.r4.model.PractitionerRole;
 import org.hl7.fhir.r4.model.Reference;
+import uk.nhs.digital.mait.fhir.util.FhirHelper;
 
 /**
  *
@@ -52,7 +52,7 @@ class ParticipantMaker {
     Organization getOrganisation() { return organisation; }
     
     private void doPractitioner(int b, ArrayList<String> rx) {
-        practitioner.setId(UUID.randomUUID().toString().toLowerCase());
+        practitioner.setId(FhirHelper.makeId());
         HumanName h = new HumanName();
         h.setText(rx.get(b + EMUdefinitions.PERSONNAME));
         ArrayList<HumanName> ah = new ArrayList<>();
@@ -67,15 +67,15 @@ class ParticipantMaker {
     }
     
     private void doRole(int b, ArrayList<String> rx) {
-        role.setId(UUID.randomUUID().toString().toLowerCase());
+        role.setId(FhirHelper.makeId());
         Identifier identifier = new Identifier();
         identifier.setSystem("https://fhir.nhs.uk/Id/sds-role-profile-id");
         identifier.setValue(rx.get(b + EMUdefinitions.ROLEPROFILE));
         ArrayList<Identifier> ai = new ArrayList<>();
         ai.add(identifier);
         role.setIdentifier(ai);
-        role.setPractitioner(new Reference(practitioner));
-        role.setOrganization(new Reference(organisation));
+        role.setPractitioner(FhirHelper.makeInternalReference(practitioner));
+        role.setOrganization(FhirHelper.makeInternalReference(organisation));
         ContactPoint c = new ContactPoint();
         c.setSystem(ContactPoint.ContactPointSystem.PHONE);
         c.setUse(ContactPoint.ContactPointUse.WORK);
@@ -83,7 +83,7 @@ class ParticipantMaker {
     }
     
     private void doOrg(int b, ArrayList<String> rx) {
-        organisation.setId(UUID.randomUUID().toString().toLowerCase());
+        organisation.setId(FhirHelper.makeId());
         Identifier identifier = new Identifier();
         identifier.setSystem("https://fhir.nhs.uk/Id/ods-organization-code");
         identifier.setValue(rx.get(b + EMUdefinitions.SDSORGANISATIONID));
@@ -99,7 +99,7 @@ class ParticipantMaker {
         
         CodeableConcept cc = new CodeableConcept();
         Coding code = new Coding();
-        code.setSystem("urn:uuid:2.16.840.1.113883.2.1.3.2.4.17.94");
+        code.setSystem("https://fhir.nhs.uk/R4/CodeSystem/organisation-type");
         code.setCode(rx.get(b + EMUdefinitions.ORGANISATIONTYPE));
         cc.addCoding(code);
         ArrayList<CodeableConcept> ac = new ArrayList<>();

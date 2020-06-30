@@ -15,6 +15,7 @@
  */
 package uk.nhs.digital.mait.epsfhir;
 
+import uk.nhs.digital.mait.fhir.util.UTF8CharacterSubstituter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;

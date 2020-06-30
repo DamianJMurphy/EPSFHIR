@@ -16,20 +16,14 @@
 package uk.nhs.digital.mait.epsfhir;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.parser.IParser;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.UUID;
 import org.hl7.fhir.r4.model.Address;
 import org.hl7.fhir.r4.model.Address.AddressUse;
 import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent;
 import org.hl7.fhir.r4.model.Bundle.BundleType;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
@@ -45,8 +39,8 @@ import org.hl7.fhir.r4.model.Organization;
 import org.hl7.fhir.r4.model.Patient;
 import org.hl7.fhir.r4.model.Quantity;
 import org.hl7.fhir.r4.model.Reference;
-import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.StringType;
+import uk.nhs.digital.mait.fhir.util.FhirHelper;
 
 /**
  *
@@ -72,6 +66,7 @@ public class MedicationRequestBundleBuilder {
     /**
      * @param args the command line arguments
      */
+    @SuppressWarnings("CallToPrintStackTrace")
     public static void main(String[] args) {
         @SuppressWarnings("UnusedAssignment")
         MedicationRequestBundleBuilder builder = null;
@@ -133,7 +128,7 @@ public class MedicationRequestBundleBuilder {
         for (String pid : emu.getPrescriptionIDs()) {
             try {
                 Bundle b = makeBundle(pid, emu.getPrescriptionData(pid), emu.getItems(pid));
-                write(pid, b, ctx);
+                FhirHelper.write(pid, outputDirectory, b, ctx, useStdOut, useXml, true);
             }
             catch (Exception e) {
                 if (immediateFail) {
@@ -144,51 +139,12 @@ public class MedicationRequestBundleBuilder {
         }
     }
     
-    private void write(String pid, Bundle b, FhirContext ctx)
-            throws Exception
-    {
-        @SuppressWarnings("UnusedAssignment")
-        IParser parser = null;
-        @SuppressWarnings("UnusedAssignment")
-        String filename = null;
-        if (useXml) {
-            parser = ctx.newXmlParser();
-            filename = pid + ".xml";            
-        } else {
-            parser = ctx.newJsonParser();
-            filename = pid + ".json";
-        }
-        String serialised = parser.encodeResourceToString(b);
-        if (useStdOut) {
-            System.out.println(pid);
-            System.out.print(serialised);
-            System.out.flush();
-        } else {
-            @SuppressWarnings("UnusedAssignment")
-            File f = null;
-            if (outputDirectory == null) {
-                f = new File(filename);
-            } else {
-                f = new File(outputDirectory, filename);
-            }
-            BufferedWriter bw = new BufferedWriter(new FileWriter(f));
-            bw.write(serialised);
-            bw.flush();
-            bw.close();
-        }        
-    }
-    
-    private void addEntryToBundle(Bundle b, Resource r) {
-        BundleEntryComponent hc = b.addEntry();
-        hc.setResource(r);
-        hc.setFullUrl("urn:uuid:" + r.getId());
-    }
-    
+        
     private Bundle makeBundle(String pid, ArrayList<String> rx, ArrayList<ArrayList<String>> items)
             throws Exception
     {
         Bundle bundle = new Bundle();
-        bundle.setId(UUID.randomUUID().toString().toLowerCase());
+        bundle.setId(FhirHelper.makeId());
         bundle.setType(BundleType.MESSAGE);
         // Practitioner and PractitionerRole entries so we can reference them
         
@@ -196,13 +152,13 @@ public class MedicationRequestBundleBuilder {
         author.make(EMUdefinitions.AUTHORROLEPROFILE, rx);
         
         MessageHeader header = makeMessageHeader(pid, rx, items, author);
-        addEntryToBundle(bundle, header);
+        FhirHelper.addEntryToBundle(bundle, header);
         
-        Patient patient = getPatient(rx);
-        addEntryToBundle(bundle, patient);
-        addEntryToBundle(bundle, author.getPractitioner());
-        addEntryToBundle(bundle, author.getOrganisation());
-        addEntryToBundle(bundle, author.getRole());
+        Patient patient = makePatient(rx);
+        FhirHelper.addEntryToBundle(bundle, patient);
+        FhirHelper.addEntryToBundle(bundle, author.getPractitioner());
+        FhirHelper.addEntryToBundle(bundle, author.getOrganisation());
+        FhirHelper.addEntryToBundle(bundle, author.getRole());
         // If there is a nominated pharmacy, we need an organisation reference for it
         // so we can give it to the request builder as a performer
         
@@ -213,12 +169,12 @@ public class MedicationRequestBundleBuilder {
         for (ArrayList<String> item : items) {
             MedicationRequest m = makeMedicationRequest(pid, patient, rx, item, nominatedPharmacy, author);
             if (m != null) {
-                addEntryToBundle(bundle, m);
-                header.addFocus(new Reference("urn:uuid:" + m.getId()));
+                FhirHelper.addEntryToBundle(bundle, m);
+                header.addFocus(FhirHelper.makeInternalReference(m));
             }
         }
-        header.addFocus(new Reference("urn:uuid:" + patient.getId()));
-        header.addFocus(new Reference("urn:uuid:" + author.getRole().getId()));
+        header.addFocus(FhirHelper.makeInternalReference(patient));
+        header.addFocus(FhirHelper.makeInternalReference(author.getRole()));
         return bundle;
     }
         
@@ -228,13 +184,13 @@ public class MedicationRequestBundleBuilder {
             throws Exception
     {
         MessageHeader header = new MessageHeader();
-        header.setId(UUID.randomUUID().toString().toLowerCase());
+        header.setId(FhirHelper.makeId());
         Coding c = new Coding();
         c.setSystem("https://fhir.nhs.uk/R4/CodeSystem/message-event");
         c.setCode("prescription-order");
         c.setDisplay("Prescription Order");
         header.setEvent(c);
-        header.setSender(new Reference("urn:uuid:" + a.getRole().getId()));
+        header.setSender(FhirHelper.makeInternalReference(a.getRole()));
         header.getSender().setDisplay(a.getPractitioner().getName().get(0).getText());
         header.setSource(makeSource());         
         return header;
@@ -264,21 +220,24 @@ public class MedicationRequestBundleBuilder {
         m.setId(item.get(EMUdefinitions.LINEITEMID));
         doPrescriptionType(rx, m);
         doResponsiblePractitioner(a, m);
-        m.addIdentifier(doIdentifier("https://fhir.nhs.uk/Id/prescription-line-id", item.get(EMUdefinitions.LINEITEMID)));
+        m.addIdentifier(FhirHelper.makeIdentifier("https://fhir.nhs.uk/Id/prescription-line-id", item.get(EMUdefinitions.LINEITEMID)));
         m.setStatus(MedicationRequest.MedicationRequestStatus.ACTIVE);
         m.setIntent(MedicationRequest.MedicationRequestIntent.ORDER);
         m.setMedication(doMedication(item));
-        m.setSubject(new Reference("urn:uuid:" + p.getId()));
+        m.setSubject(FhirHelper.makeInternalReference(p));
         
         // This is currently uncertain. EMU doesn't seem to provide a date for the prescription itself,
         // though it does the participation times. So use that.
-        m.setAuthoredOn(hl7v3ToDate(rx.get(EMUdefinitions.AUTHORPARTICIPATIONTIME)));
-        m.setRequester(new Reference("urn:uuid:" + a.getPractitioner().getId()));
+        m.setAuthoredOn(FhirHelper.hl7v3ToDate(rx.get(EMUdefinitions.AUTHORPARTICIPATIONTIME)));
+        Reference rq = FhirHelper.makeInternalReference(a.getRole());
+        rq.setDisplay(a.getPractitioner().getName().get(0).getText());
+        m.setRequester(rq);
         m.setGroupIdentifier(makeGroupIdentifier(pid, rx));
         m.setCourseOfTherapyType(makeCourseOfTherapyType(rx));
         if (item.get(EMUdefinitions.DOSAGEINTRUCTIONS).trim().length() > 0) {
             Dosage di = m.addDosageInstruction();
             di.setText(item.get(EMUdefinitions.DOSAGEINTRUCTIONS));
+            di.setPatientInstruction(item.get(EMUdefinitions.ADDITIONALINSTRUCTIONS));
         }
         m.setDispenseRequest(makeDispenseRequest(n, rx, item));
         // Don't do "substitution" partly because HAPI has a problem with it, and it is 
@@ -310,7 +269,7 @@ public class MedicationRequestBundleBuilder {
     private CodeableConcept makeCourseOfTherapyType(ArrayList<String> rx) {
         CodeableConcept cc = new CodeableConcept();
         Coding c = cc.addCoding();
-        c.setSystem("https://fhir.nhs.uk/R4/CodeSystem/CareConnect-PrescriptionType");
+        c.setSystem("https://fhir.nhs.uk/R4/CodeSystem/UKCore-PrescriptionType");
         try {
             String t = rx.get(EMUdefinitions.PRESCRIPTIONTREATMENTTYPE).trim();
             if ((t.length() == 0) || t.contentEquals("0001")) {
@@ -334,26 +293,16 @@ public class MedicationRequestBundleBuilder {
     }
     
     private Identifier makeGroupIdentifier(String pid, ArrayList<String> rx) {
-        Identifier id = new Identifier();
-        Extension ex = id.addExtension();
+        Identifier sfid = new Identifier();
+        Extension ex = sfid.addExtension();
         ex.setUrl("https://fhir.nhs.uk/R4/StructureDefinition/Extension-PrescriptionId");
-        ex.setValue(new StringType(rx.get(EMUdefinitions.PRESCRIPTIONCLINICALSTATEMENTID)));
-        id.setSystem("https://fhir.nhs.uk/Id/prescription-short-form");
-        id.setValue(rx.get(EMUdefinitions.PRESCRIPTIONID));
-        return id;
+        ex.setValue(FhirHelper.makeIdentifier("https://fhir.nhs.uk/Id/prescription", 
+                rx.get(EMUdefinitions.PRESCRIPTIONCLINICALSTATEMENTID)));
+        sfid.setSystem("https://fhir.nhs.uk/Id/prescription-short-form");
+        sfid.setValue(rx.get(EMUdefinitions.PRESCRIPTIONID));
+        return sfid;
     }
     
-    private Date hl7v3ToDate(String s) {
-        if ((s == null) || (s.trim().length() == 0)) {
-            return new Date();
-        }
-        try {
-            return EMUdefinitions.TIMEFORMAT.parse(s);            
-        }
-        catch (ParseException e) {
-            return new Date();
-        }
-    }
     
     private CodeableConcept doMedication(ArrayList<String> item) {
         CodeableConcept cc = new CodeableConcept();
@@ -364,18 +313,11 @@ public class MedicationRequestBundleBuilder {
         return cc;
     }
     
-    private Identifier doIdentifier(String u, String v) {
-        Identifier id = new Identifier();
-        id.setSystem(u);
-        id.setValue(v);
-        return id;
-    }
     
     private void doResponsiblePractitioner(ParticipantMaker a, MedicationRequest m) {
         Extension er = m.addExtension();
         er.setUrl("https://fhir.nhs.uk/R4/StructureDefinition/Extension-DM-ResponsiblePractitioner");
-        Reference r = new Reference("urn:uuid:" + a.getPractitioner().getId());
-        er.setValue(r);        
+        er.setValue(FhirHelper.makeInternalReference(a.getRole()));        
     }
     
     private void doPrescriptionType(ArrayList<String> rx, MedicationRequest m) {
@@ -407,18 +349,18 @@ public class MedicationRequestBundleBuilder {
         return r;
     }
     
-    private Patient getPatient(ArrayList<String> rx)
+    private Patient makePatient(ArrayList<String> rx)
             throws Exception
     {
         Patient p = new Patient();
-        p.setId(UUID.randomUUID().toString().toLowerCase());
+        p.setId(FhirHelper.makeId());
         addNhsNumber(p, rx);
         addPatientName(p, rx);
-        Date dob = formatDate(rx.get(EMUdefinitions.PATIENTBIRTHTIME));
+        Date dob = FhirHelper.makeDate(rx.get(EMUdefinitions.PATIENTBIRTHTIME));
         if (dob != null) {
             p.setBirthDate(dob);
         }
-        Date dd = formatDate(rx.get(EMUdefinitions.PATIENTDECEASEDTIME));
+        Date dd = FhirHelper.makeDate(rx.get(EMUdefinitions.PATIENTDECEASEDTIME));
         p.setGender(getGender(rx.get(EMUdefinitions.PATIENTGENDER)));
         addPatientAddress(p, rx);
         addPatientGP(p, rx);
@@ -442,7 +384,10 @@ public class MedicationRequestBundleBuilder {
         al.add(gp);
         org.setIdentifier(al);
         p.setManagingOrganizationTarget(org);
-        p.getManagingOrganization().setReference("https://directory.spineservices.nhs.uk/STU3/Organization/" + rx.get(EMUdefinitions.PATIENTPRIMARYCAREPROVIDESDSID));
+//        p.getManagingOrganization().setIdentifier(
+//                FhirHelper.makeIdentifier("https://fhir.nhs.uk/Id/ods-organization-code", 
+//                rx.get(EMUdefinitions.PATIENTPRIMARYCAREPROVIDESDSID))
+//        );      
     }
     
     private AdministrativeGender getGender(String s) {
@@ -464,15 +409,6 @@ public class MedicationRequestBundleBuilder {
         return AdministrativeGender.OTHER;
     }
     
-    private Date formatDate(String s) 
-            throws Exception
-    {
-        if ((s == null) || (s.trim().length() == 0)) {
-            return null;
-        }
-        Date d = EMUdefinitions.DATEFORMAT.parse(s);
-        return d;
-    }
     
     private void addIfPresent(ArrayList<StringType> st, ArrayList<String> rx, int offset) {
         try {

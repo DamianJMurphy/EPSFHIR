@@ -10,7 +10,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-classpath %classpath uk.nhs.digital.mait.epsfhir.MedicationRequestBundleBuilder epsfhir.properties Export_JoinedTable_R2_20200522144905-1-HCOMP13-INTEGRATION-4714.txt Export_LineItem_R2_20200522144905-1-HCOMP13-INTEGRATION-4714.txt  Output</exec.args>
+                <exec.args>-classpath %classpath uk.nhs.digital.mait.epsfhir.MedicationRequestBundleBuilder epsfhir.properties PrescriptionsTest.txt ItemsTest.txt  Output</exec.args>
                 <exec.executable>java</exec.executable>
                 <exec.workingdir>C:\Users\Damian Murphy\Documents\Tests\EPS-FHIR</exec.workingdir>
             </properties>
@@ -25,7 +25,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath uk.nhs.digital.mait.epsfhir.MedicationRequestBundleBuilder epsfhir.properties Export_JoinedTable_R2_20200522144905-1-HCOMP13-INTEGRATION-4714.txt Export_LineItem_R2_20200522144905-1-HCOMP13-INTEGRATION-4714.txt  Output</exec.args>
+                <exec.args>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath uk.nhs.digital.mait.epsfhir.MedicationRequestBundleBuilder epsfhir.properties PrescriptionsTest.txt ItemsTest.txt  Output</exec.args>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
                 <exec.workingdir>C:\Users\Damian Murphy\Documents\Tests\EPS-FHIR</exec.workingdir>
@@ -41,7 +41,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-classpath %classpath uk.nhs.digital.mait.epsfhir.MedicationRequestBundleBuilder epsfhir.properties Export_JoinedTable_R2_20200522144905-1-HCOMP13-INTEGRATION-4714.txt Export_LineItem_R2_20200522144905-1-HCOMP13-INTEGRATION-4714.txt  Output</exec.args>
+                <exec.args>-classpath %classpath uk.nhs.digital.mait.epsfhir.MedicationRequestBundleBuilder epsfhir.properties PrescriptionsTest.txt ItemsTest.txt  Output</exec.args>
                 <exec.executable>java</exec.executable>
                 <exec.workingdir>C:\Users\Damian Murphy\Documents\Tests\EPS-FHIR</exec.workingdir>
             </properties>

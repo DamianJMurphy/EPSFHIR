@@ -13,12 +13,13 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-package uk.nhs.digital.mait.epsfhir;
+package uk.nhs.digital.mait.fhir.util;
 
 import java.util.HashMap;
 
 /**
- *
+ * Support for tagged "dodgy character" tests.
+ * 
  * @author Damian Murphy
  */
 public class UTF8CharacterSubstituter {
