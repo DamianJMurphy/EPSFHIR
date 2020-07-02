@@ -374,12 +374,8 @@ public class MedicationRequestBundleBuilder {
         // is used and not generalPractitioner.
         
         Organization org = new Organization();
-        
-        // Need to see how to set reference and type
-
         ArrayList<Identifier> ai = FhirHelper.makeIdentifierArray("https://fhir.nhs.uk/Id/ods-organization-code",
                 rx.get(EMUdefinitions.PATIENTPRIMARYCAREPROVIDESDSID));
-        Identifier gp = new Identifier();
         org.setIdentifier(ai);
         p.setManagingOrganizationTarget(org);
     }
