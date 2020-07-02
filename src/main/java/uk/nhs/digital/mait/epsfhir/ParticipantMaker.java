@@ -58,21 +58,14 @@ class ParticipantMaker {
         ArrayList<HumanName> ah = new ArrayList<>();
         ah.add(h);
         practitioner.setName(ah);
-        Identifier identifier = new Identifier();
-        identifier.setSystem("https://fhir.nhs.uk/Id/sds-user-id");
-        identifier.setValue(rx.get(b + EMUdefinitions.SDSUSERID));
-        ArrayList<Identifier> ai = new ArrayList<>();
-        ai.add(identifier);
+        ArrayList<Identifier> ai = FhirHelper.makeIdentifierArray("https://fhir.nhs.uk/Id/sds-user-id", rx.get(b + EMUdefinitions.SDSUSERID));
         practitioner.setIdentifier(ai);
     }
     
     private void doRole(int b, ArrayList<String> rx) {
         role.setId(FhirHelper.makeId());
-        Identifier identifier = new Identifier();
-        identifier.setSystem("https://fhir.nhs.uk/Id/sds-role-profile-id");
-        identifier.setValue(rx.get(b + EMUdefinitions.ROLEPROFILE));
-        ArrayList<Identifier> ai = new ArrayList<>();
-        ai.add(identifier);
+        ArrayList<Identifier> ai = FhirHelper.makeIdentifierArray("https://fhir.nhs.uk/Id/sds-role-profile-id", 
+                rx.get(b + EMUdefinitions.ROLEPROFILE));
         role.setIdentifier(ai);
         role.setPractitioner(FhirHelper.makeInternalReference(practitioner));
         role.setOrganization(FhirHelper.makeInternalReference(organisation));
@@ -84,11 +77,8 @@ class ParticipantMaker {
     
     private void doOrg(int b, ArrayList<String> rx) {
         organisation.setId(FhirHelper.makeId());
-        Identifier identifier = new Identifier();
-        identifier.setSystem("https://fhir.nhs.uk/Id/ods-organization-code");
-        identifier.setValue(rx.get(b + EMUdefinitions.SDSORGANISATIONID));
-        ArrayList<Identifier> ai = new ArrayList<>();
-        ai.add(identifier);
+        ArrayList<Identifier> ai = FhirHelper.makeIdentifierArray("https://fhir.nhs.uk/Id/ods-organization-code", 
+                rx.get(b + EMUdefinitions.SDSORGANISATIONID));
         organisation.setIdentifier(ai);
         ContactPoint c = new ContactPoint();
         c.setSystem(ContactPoint.ContactPointSystem.PHONE);
@@ -135,9 +125,8 @@ class ParticipantMaker {
         aa.add(addr);
         organisation.setAddress(aa);
         // part of (pct)
-        Identifier pct = new Identifier();
-        pct.setSystem("https://fhir.nhs.uk/Id/ods-organization-code");
-        pct.setValue(rx.get(b + EMUdefinitions.PCTORGANISATIONSDSID));
+        Identifier pct = FhirHelper.makeIdentifier("https://fhir.nhs.uk/Id/ods-organization-code", 
+                rx.get(b + EMUdefinitions.PCTORGANISATIONSDSID));
         Reference pctref = new Reference();
         pctref.setIdentifier(pct);
         organisation.setPartOf(pctref);

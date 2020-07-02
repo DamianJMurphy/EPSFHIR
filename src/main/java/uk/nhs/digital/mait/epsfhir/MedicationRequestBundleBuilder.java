@@ -376,18 +376,12 @@ public class MedicationRequestBundleBuilder {
         Organization org = new Organization();
         
         // Need to see how to set reference and type
-        
+
+        ArrayList<Identifier> ai = FhirHelper.makeIdentifierArray("https://fhir.nhs.uk/Id/ods-organization-code",
+                rx.get(EMUdefinitions.PATIENTPRIMARYCAREPROVIDESDSID));
         Identifier gp = new Identifier();
-        gp.setSystem("https://fhir.nhs.uk/Id/ods-organization-code");
-        gp.setValue(rx.get(EMUdefinitions.PATIENTPRIMARYCAREPROVIDESDSID));
-        ArrayList<Identifier> al = new ArrayList<>();
-        al.add(gp);
-        org.setIdentifier(al);
+        org.setIdentifier(ai);
         p.setManagingOrganizationTarget(org);
-//        p.getManagingOrganization().setIdentifier(
-//                FhirHelper.makeIdentifier("https://fhir.nhs.uk/Id/ods-organization-code", 
-//                rx.get(EMUdefinitions.PATIENTPRIMARYCAREPROVIDESDSID))
-//        );      
     }
     
     private AdministrativeGender getGender(String s) {

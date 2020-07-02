@@ -23,6 +23,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 import org.hl7.fhir.r4.model.Bundle;
@@ -126,6 +127,12 @@ public class FhirHelper {
         return id;
     }
 
+    public static final ArrayList<Identifier> makeIdentifierArray(String u, String v) {
+        ArrayList<Identifier> a = new ArrayList<>();
+        a.add(FhirHelper.makeIdentifier(u, v));
+        return a;
+    }
+    
     /**
      * Parses an HL7v3 date/time format string and returns it as a Date. If this
      * operation fails, the current date is returned.
