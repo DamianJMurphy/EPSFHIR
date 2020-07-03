@@ -27,9 +27,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Coding;
+import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Resource;
+import org.hl7.fhir.r4.model.Type;
 
 /**
  * Set of "helper" static methods for working with HAPI FHIR resource classes.
@@ -131,6 +134,32 @@ public class FhirHelper {
         ArrayList<Identifier> a = new ArrayList<>();
         a.add(FhirHelper.makeIdentifier(u, v));
         return a;
+    }
+    
+    public static final Extension makeExtension(String u, Type v) {
+        return FhirHelper.makeExtension(null, u, v);
+    }
+    
+    public static final Extension makeExtension(Extension e, String u, Type v) {
+        Extension x = (e == null) ? new Extension() : e;
+        x.setUrl(u);
+        x.setValue(v);
+        return x;
+    } 
+    
+    public static final Coding makeCoding(Coding cd, String s, String c, String d) {
+        Coding coding = (cd == null) ? new Coding() : cd;
+        if (s != null) 
+            coding.setSystem(s);
+        if (c != null)
+            coding.setCode(c);
+        if (d != null)
+            coding.setDisplay(d);
+        return coding;        
+    }
+    
+    public static final Coding makeCoding(String s, String c, String d) {
+        return FhirHelper.makeCoding(null, s, c, d);
     }
     
     /**

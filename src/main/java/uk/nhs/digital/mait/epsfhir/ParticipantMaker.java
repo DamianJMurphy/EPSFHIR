@@ -88,10 +88,8 @@ class ParticipantMaker {
         // Note: type - EMU can't provide a FHIR OrganizationType
         
         CodeableConcept cc = new CodeableConcept();
-        Coding code = new Coding();
-        code.setSystem("https://fhir.nhs.uk/R4/CodeSystem/organisation-type");
-        code.setCode(rx.get(b + EMUdefinitions.ORGANISATIONTYPE));
-        cc.addCoding(code);
+        cc.addCoding(FhirHelper.makeCoding("https://fhir.nhs.uk/R4/CodeSystem/organisation-type", 
+                rx.get(b + EMUdefinitions.ORGANISATIONTYPE), null));
         ArrayList<CodeableConcept> ac = new ArrayList<>();
         ac.add(cc);
         organisation.setType(ac);

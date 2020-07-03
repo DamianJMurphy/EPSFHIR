@@ -185,11 +185,8 @@ public class MedicationRequestBundleBuilder {
     {
         MessageHeader header = new MessageHeader();
         header.setId(FhirHelper.makeId());
-        Coding c = new Coding();
-        c.setSystem("https://fhir.nhs.uk/R4/CodeSystem/message-event");
-        c.setCode("prescription-order");
-        c.setDisplay("Prescription Order");
-        header.setEvent(c);
+        header.setEvent(FhirHelper.makeCoding("https://fhir.nhs.uk/R4/CodeSystem/message-event", 
+                "prescription-order", "Prescription Order"));
         header.setSender(FhirHelper.makeInternalReference(a.getRole()));
         header.getSender().setDisplay(a.getPractitioner().getName().get(0).getText());
         header.setSource(makeSource());         
@@ -198,12 +195,9 @@ public class MedicationRequestBundleBuilder {
     
     private MessageSourceComponent makeSource() {
         MessageSourceComponent s = new MessageSourceComponent();
-        Extension asid = s.addExtension();
-        asid.setUrl("https://fhir.nhs.uk/R4/StructureDefinition/Extension-spineEndpoint");
-        Identifier id = new Identifier();
-        id.setSystem("https://fhir.nhs.uk/Id/spine-ASID");
-        id.setValue(System.getProperty(MYASID));
-        asid.setValue(id);
+        Extension asid = FhirHelper.makeExtension(s.addExtension(), 
+                "https://fhir.nhs.uk/R4/StructureDefinition/Extension-spineEndpoint", 
+                FhirHelper.makeIdentifier("https://fhir.nhs.uk/Id/spine-ASID", System.getProperty(MYASID)));
         s.setName(System.getProperty(MYODS));
         s.setEndpoint(System.getProperty(MYURL));
         return s;
@@ -247,12 +241,9 @@ public class MedicationRequestBundleBuilder {
     
     private MedicationRequest.MedicationRequestDispenseRequestComponent makeDispenseRequest(Reference n, ArrayList<String> rx, ArrayList<String> item) {
         MedicationRequest.MedicationRequestDispenseRequestComponent m = new MedicationRequest.MedicationRequestDispenseRequestComponent();
-        Extension pte = m.addExtension();
-        pte.setUrl("https://fhir.nhs.uk/R4/StructureDefinition/Extension-performerType");
-        Coding c = new Coding();
-        c.setSystem("https://fhir.nhs.uk/R4/CodeSystem/dispensing-site-preference");
-        c.setCode(rx.get(EMUdefinitions.DISPENSINGSITEPREFERENCE));
-        pte.setValue(c);
+        FhirHelper.makeExtension(m.addExtension(), "https://fhir.nhs.uk/R4/StructureDefinition/Extension-performerType",
+                FhirHelper.makeCoding("https://fhir.nhs.uk/R4/CodeSystem/dispensing-site-preference", 
+                           rx.get(EMUdefinitions.DISPENSINGSITEPREFERENCE), null));
         Quantity q = new Quantity();
         q.setCode(item.get(EMUdefinitions.QUANTITYCODE));
         q.setSystem("http://snomed.info/sct");
@@ -293,39 +284,32 @@ public class MedicationRequestBundleBuilder {
     }
     
     private Identifier makeGroupIdentifier(String pid, ArrayList<String> rx) {
-        Identifier sfid = new Identifier();
-        Extension ex = sfid.addExtension();
-        ex.setUrl("https://fhir.nhs.uk/R4/StructureDefinition/Extension-PrescriptionId");
-        ex.setValue(FhirHelper.makeIdentifier("https://fhir.nhs.uk/Id/prescription", 
-                rx.get(EMUdefinitions.PRESCRIPTIONCLINICALSTATEMENTID)));
-        sfid.setSystem("https://fhir.nhs.uk/Id/prescription-short-form");
-        sfid.setValue(rx.get(EMUdefinitions.PRESCRIPTIONID));
+        Identifier sfid = FhirHelper.makeIdentifier("https://fhir.nhs.uk/Id/prescription-short-form", 
+                rx.get(EMUdefinitions.PRESCRIPTIONID));
+        FhirHelper.makeExtension(sfid.addExtension(), "https://fhir.nhs.uk/R4/StructureDefinition/Extension-PrescriptionId",
+            FhirHelper.makeIdentifier("https://fhir.nhs.uk/Id/prescription", rx.get(EMUdefinitions.PRESCRIPTIONCLINICALSTATEMENTID)));
         return sfid;
     }
     
     
     private CodeableConcept doMedication(ArrayList<String> item) {
         CodeableConcept cc = new CodeableConcept();
-        Coding c = cc.addCoding();
-        c.setSystem("http://snomed.info/sct");
-        c.setCode(item.get(EMUdefinitions.SUBSTANCECODE));
-        c.setDisplay(item.get(EMUdefinitions.DISPLAYNAME));
+        FhirHelper.makeCoding(cc.addCoding(), "http://snomed.info/sct", item.get(EMUdefinitions.SUBSTANCECODE), 
+                item.get(EMUdefinitions.DISPLAYNAME));
         return cc;
     }
-    
-    
+        
     private void doResponsiblePractitioner(ParticipantMaker a, MedicationRequest m) {
-        Extension er = m.addExtension();
-        er.setUrl("https://fhir.nhs.uk/R4/StructureDefinition/Extension-DM-ResponsiblePractitioner");
-        er.setValue(FhirHelper.makeInternalReference(a.getRole()));        
+        FhirHelper.makeExtension(m.addExtension(),
+                "https://fhir.nhs.uk/R4/StructureDefinition/Extension-DM-ResponsiblePractitioner",
+                FhirHelper.makeInternalReference(a.getRole()));        
     }
     
     private void doPrescriptionType(ArrayList<String> rx, MedicationRequest m) {
         Extension pt = m.addExtension();
         pt.setUrl("https://fhir.nhs.uk/R4/StructureDefinition/Extension-prescriptionType");
-        Coding ptc = new Coding();
-        ptc.setSystem("https://fhir.nhs.uk/R4/CodeSystem/prescription-type");
-        ptc.setCode(rx.get(EMUdefinitions.PRESCRIPTIONTYPE));
+        Coding ptc = FhirHelper.makeCoding("https://fhir.nhs.uk/R4/CodeSystem/prescription-type", 
+                rx.get(EMUdefinitions.PRESCRIPTIONTYPE), null);
         
         // TODO: We could do with a general way to resolve displays for MIM vocabularies
         if (rx.get(EMUdefinitions.PRESCRIPTIONTYPE).contentEquals("0001")) {
@@ -340,9 +324,8 @@ public class MedicationRequestBundleBuilder {
         
         if (rx.get(EMUdefinitions.NOMINATEDPHARMACYID).length() > 0) {
             r = new Reference();
-            Identifier id = new Identifier();
-            id.setSystem("https://fhir.nhs.uk/Id/ods-organization-code");
-            id.setValue(rx.get(EMUdefinitions.NOMINATEDPHARMACYID));
+            Identifier id = FhirHelper.makeIdentifier("https://fhir.nhs.uk/Id/ods-organization-code",
+                rx.get(EMUdefinitions.NOMINATEDPHARMACYID));
             r.setIdentifier(id);
         }
         
@@ -450,11 +433,8 @@ public class MedicationRequestBundleBuilder {
         Extension evs = new Extension();
         evs.setUrl("https://fhir.nhs.uk/R4/StructureDefinition/Extension-UKCore-NHSNumberVerificationStatus");
         CodeableConcept vccvs = new CodeableConcept();
-        Coding c = new Coding();
-        c.setSystem("https://fhir.nhs.uk/R4/CodeSystem/UKCore-NHSNumberVerificationStatus");
-        c.setCode("01");
-        c.setDisplay("Number present and verified");
-        vccvs.addCoding(c);
+        vccvs.addCoding(FhirHelper.makeCoding("https://fhir.nhs.uk/R4/CodeSystem/UKCore-NHSNumberVerificationStatus", 
+                "01", "Number present and verified"));
         evs.setValue(vccvs);
         nhsnumber.addExtension(evs);
         ArrayList<Identifier> n = new ArrayList<>();
