@@ -130,16 +130,36 @@ public class FhirHelper {
         return id;
     }
 
+    /**
+     * Make an ArrayList containing a single Identifier
+     * @param u
+     * @param v
+     * @return
+     */
     public static final ArrayList<Identifier> makeIdentifierArray(String u, String v) {
         ArrayList<Identifier> a = new ArrayList<>();
         a.add(FhirHelper.makeIdentifier(u, v));
         return a;
     }
     
+    /**
+     * Make a new Extension
+     * @param u
+     * @param v
+     * @return
+     */
     public static final Extension makeExtension(String u, Type v) {
         return FhirHelper.makeExtension(null, u, v);
     }
     
+    /**
+     * Set the URL and value on the given Extension, and return it. Makes a new Extension if
+     * given Extension is null.
+     * @param e
+     * @param u
+     * @param v
+     * @return The Extension passed in parameter e, or a new Extension if e was null.
+     */
     public static final Extension makeExtension(Extension e, String u, Type v) {
         Extension x = (e == null) ? new Extension() : e;
         x.setUrl(u);
@@ -147,6 +167,15 @@ public class FhirHelper {
         return x;
     } 
     
+    /**
+     * Set the system, code and display on the given Coding, and return it. Makes a new
+     * Coding if the given one is null,
+     * @param cd
+     * @param s
+     * @param c
+     * @param d
+     * @return
+     */
     public static final Coding makeCoding(Coding cd, String s, String c, String d) {
         Coding coding = (cd == null) ? new Coding() : cd;
         if (s != null) 
@@ -158,6 +187,13 @@ public class FhirHelper {
         return coding;        
     }
     
+    /**
+     * Make and populate a new Coding.
+     * @param s System
+     * @param c Code
+     * @param d Display (may be null)
+     * @return
+     */
     public static final Coding makeCoding(String s, String c, String d) {
         return FhirHelper.makeCoding(null, s, c, d);
     }
