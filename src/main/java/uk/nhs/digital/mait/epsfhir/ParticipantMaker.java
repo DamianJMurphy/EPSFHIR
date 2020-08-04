@@ -73,6 +73,9 @@ class ParticipantMaker {
         c.setSystem(ContactPoint.ContactPointSystem.PHONE);
         c.setUse(ContactPoint.ContactPointUse.WORK);
         c.setValue(rx.get(b + EMUdefinitions.ORGANISATIONTELECOM));
+        ArrayList<ContactPoint> at = new ArrayList<>();
+        at.add(c);
+        role.setTelecom(at);
     }
     
     private void doOrg(int b, ArrayList<String> rx) {
