@@ -84,6 +84,7 @@ class ParticipantMaker {
         c.setSystem(ContactPoint.ContactPointSystem.PHONE);
         c.setUse(ContactPoint.ContactPointUse.WORK);
         c.setValue(rx.get(b + EMUdefinitions.ORGANISATIONTELECOM));
+        organisation.addTelecom(c);
         
         // Note: type - EMU can't provide a FHIR OrganizationType
         
