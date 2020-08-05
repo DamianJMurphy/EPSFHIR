@@ -151,7 +151,7 @@ public class MedicationRequestBundleBuilder {
         ParticipantMaker author = new ParticipantMaker();
         author.make(EMUdefinitions.AUTHORROLEPROFILE, rx);
         
-        MessageHeader header = makeMessageHeader(pid, rx, items, author);
+        MessageHeader header = makeMessageHeader(author);
         FhirHelper.addEntryToBundle(bundle, header);
         
         Patient patient = makePatient(rx);
@@ -178,9 +178,7 @@ public class MedicationRequestBundleBuilder {
         return bundle;
     }
         
-    private MessageHeader makeMessageHeader(String pid, ArrayList<String> rx, 
-            ArrayList<ArrayList<String>> items,
-            ParticipantMaker a)
+    private MessageHeader makeMessageHeader(ParticipantMaker a)
             throws Exception
     {
         MessageHeader header = new MessageHeader();
